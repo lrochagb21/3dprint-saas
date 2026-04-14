@@ -248,10 +248,16 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
       btn.textContent = 'Criar conta grátis';
       return;
     }
-    setMsg('Conta criada com sucesso! Faça login para continuar.', 'success');
+    setMsg('✅ Conta criada com sucesso! Clique aqui para fazer login.', 'success');
+document.getElementById('msg').style.cursor = 'pointer';
+document.getElementById('msg').onclick = () => {
+  setMsg('');
+  document.getElementById('msg').onclick = null;
+  document.getElementById('msg').style.cursor = 'default';
+  showTab('login');
+};
 btn.disabled = false;
 btn.textContent = 'Criar conta grátis';
-showTab('login');
   }
 </script>
 </body>

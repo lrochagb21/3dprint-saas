@@ -2952,11 +2952,63 @@ async function loadFromSupabase() {
       sb.from('estoque').select('*').order('created_at', { ascending: true }),
       sb.from('configuracoes').select('*').single()
     ]);
-    if (orcRes.data)  _mem['orcamentos'] = orcRes.data;
-    if (vendRes.data) _mem['vendas']     = vendRes.data;
-    if (estRes.data)  _mem['estoque']    = estRes.data;
+
+    // Mapear orcamentos
+    if (orcRes.data) {
+      _mem['orcamentos'] = orcRes.data.map(o => ({
+        id: o.id,
+        num: o.codigo,
+        cliente: o.cliente_nome,
+        produto: o.arquivo,
+        gramTotal: o.peso_g,
+        custo: o.custo_total,
+        precoSugerido: o.preco_venda,
+        precoCobrado: o.preco_cobrado,
+        status: o.status || 'pendente',
+        obs: o.notas,
+        data: o.created_at ? o.created_at.slice(0,10) : '',
+        filamentos: o.filamentos || [],
+        custoFil: o.custo_fil,
+        custoEnergia: o.custo_energia,
+        custoManut: o.custo_manut,
+        custoInsumo: o.custo_insumo,
+        custoEmb: o.custo_emb,
+        tempo: o.tempo_h
+      }));
+    }
+
+    // Mapear vendas
+    if (vendRes.data) {
+      _mem['vendas'] = vendRes.data.map(v => ({
+        id: v.id,
+        cliente: v.cliente_nome,
+        produto: v.produto,
+        valor: v.valor,
+        custo: v.custo,
+        lucro: v.lucro,
+        origem: v.origem,
+        pagamento: v.pagamento,
+        data: v.data_venda,
+        obs: v.obs,
+        filamentos: []
+      }));
+    }
+
+    // Mapear estoque
+    if (estRes.data) {
+      _mem['estoque'] = estRes.data.map(e => ({
+        id: e.id,
+        material: e.material,
+        marca: e.marca,
+        cor: e.cor,
+        comprado: e.peso_total_g,
+        atual: e.peso_restante_g,
+        custoKg: e.custo_kg
+      }));
+    }
+
+    // Mapear config
     if (cfgRes.data) {
-      // Mapear colunas do banco para o formato do app
       const c = cfgRes.data;
       _mem['config'] = {
         filamento: c.custo_kg_filamento || 120,

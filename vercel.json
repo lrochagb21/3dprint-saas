@@ -1,6 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/", "destination": "/index.html" }
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "src": "/app", "dest": "/app.html" },
+    { "src": "/app.html", "dest": "/app.html" },
+    { "src": "/", "dest": "/index.html" }
   ]
 }

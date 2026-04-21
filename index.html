@@ -30,6 +30,19 @@ try {
 
 // ========== ON LOAD ==========
 document.addEventListener('DOMContentLoaded', function() {
+
+  // ── Handle password recovery link ──────────────────────────
+  var hash = window.location.hash;
+  if (hash && hash.includes('type=recovery') && hash.includes('access_token')) {
+    // Show reset password form
+    document.getElementById('auth-screen').classList.add('active');
+    document.querySelectorAll('.auth-form').forEach(function(f) { f.style.display = 'none'; });
+    document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+    var resetForm = document.getElementById('auth-reset');
+    if (resetForm) resetForm.style.display = 'flex';
+    return;
+  }
+
   if (_sb) {
     _sb.auth.getSession().then(function(res) {
       var session = res.data && res.data.session;
@@ -280,6 +293,31 @@ window.doLogin = function() {
 };
 
 // ========== FORGOT PASSWORD ==========
+window.doResetPassword = function() {
+  var pass = document.getElementById('reset-pass').value;
+  var pass2 = document.getElementById('reset-pass2').value;
+  if (pass.length < 8) return showErr('reset-err', 'A senha deve ter pelo menos 8 caracteres.');
+  if (pass !== pass2) return showErr('reset-err', 'As senhas não coincidem.');
+  var btn = document.querySelector('#auth-reset .auth-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  if (_sb) {
+    _sb.auth.updateUser({ password: pass }).then(function(res) {
+      if (res.error) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Salvar nova senha'; }
+        return showErr('reset-err', 'Erro ao salvar. Tente novamente.');
+      }
+      // Success - clear hash and go to login
+      window.location.hash = '';
+      if (btn) { btn.disabled = false; btn.textContent = 'Salvar nova senha'; }
+      document.querySelectorAll('.auth-form').forEach(function(f) { f.style.display = 'none'; });
+      document.getElementById('auth-login').style.display = 'flex';
+      document.querySelectorAll('.auth-tab')[0].classList.add('active');
+      showErr('login-err', ''); // clear errors
+      alert('Senha alterada com sucesso! Faça login com a nova senha.');
+    });
+  }
+};
+
 window.doForgot = function() {
   var email = document.getElementById('forgot-email').value.trim();
   if (!validateEmail(email)) return showErr('forgot-err', 'Informe um e-mail válido.');
@@ -1216,6 +1254,28 @@ body { overflow: hidden; }
             <div style="font-size:13px;color:var(--muted);line-height:1.6;">Enviamos um link de confirmação para <b id="verify-email-display"></b>.</div>
             <div style="margin-top:20px;font-size:12px;color:var(--muted);">Não recebeu? <a href="#" onclick="resendVerification()" style="color:var(--accent2);text-decoration:none;">Reenviar e-mail</a></div>
           </div>
+        </div>
+
+        <!-- RESET PASSWORD -->
+        <div id="auth-reset" class="auth-form" style="display:none;">
+          <div style="text-align:center;padding:8px 0 16px;">
+            <div style="font-size:32px;margin-bottom:10px;">🔑</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Nova senha</div>
+            <div style="font-size:13px;color:var(--muted);">Digite sua nova senha abaixo.</div>
+          </div>
+          <div id="reset-err" class="auth-err"></div>
+          <div>
+            <label class="auth-label">Nova Senha</label>
+            <div class="pw-wrap">
+              <input id="reset-pass" class="auth-input" type="password" placeholder="Mín. 8 caracteres" autocomplete="new-password">
+              <button class="pw-toggle" onclick="togglePw('reset-pass', this)" type="button">👁</button>
+            </div>
+          </div>
+          <div>
+            <label class="auth-label">Confirmar Nova Senha</label>
+            <input id="reset-pass2" class="auth-input" type="password" placeholder="Repita a senha" autocomplete="new-password">
+          </div>
+          <button class="auth-btn" onclick="doResetPassword()">Salvar nova senha</button>
         </div>
 
       </div><!-- end auth-box -->

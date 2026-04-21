@@ -331,6 +331,8 @@ window.logout = function() {
 // ========== TRIAL BANNER ==========
 function showTrialBanner() {
   if (!_currentUser) return;
+  // Se tem assinatura ativa, não mostra banner
+  if (_currentUser.assinaturaAtiva === true) return;
   if (_currentUser.plan === 'trial') {
     var expires = new Date(_currentUser.trialExpires);
     var daysLeft = Math.ceil((expires - new Date()) / 86400000);

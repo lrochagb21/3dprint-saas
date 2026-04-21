@@ -2365,7 +2365,7 @@ function openFilPicker(currentColor, currentMaterial) {
       grid.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Nenhum filamento no estoque.<br>Cadastre materiais em <strong>Estoque</strong>.</div>';
     } else {
       grid.innerHTML = estoque.map(e => {
-        const pct = e.comprado > 0 ? Math.round((e.atual / e.comprado) * 100) : 0;
+        const pct = Math.min(100, Math.round((e.atual / 1000) * 100));
         const stockColor = pct < 20 ? 'var(--danger)' : pct < 50 ? 'var(--yellow)' : 'var(--accent)';
         const isSelected = e.cor === currentColor && e.material === currentMaterial;
         return `<div class="fil-picker-item${isSelected ? ' selected' : ''}" data-cor="${e.cor}" data-material="${e.material}" onclick="filPickerSelect(this, '${e.cor}', '${e.material}')">
@@ -3280,7 +3280,7 @@ function renderDetailEstoque(id) {
   const e = getEstoque().find(x=>x.id===id);
   if (!e) return;
   const hist = getHistorico().filter(h=>h.estoqueId===id).slice().reverse();
-  const pct = e.comprado > 0 ? Math.round((e.atual/e.comprado)*100) : 0;
+  const pct = Math.min(100, Math.round((e.atual / 1000) * 100));
   const histRows = hist.map(h => `
     <tr>
       <td class="mono">${h.data}</td>

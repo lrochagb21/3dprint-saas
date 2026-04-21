@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
-</script>>
+</script>
 <style>
 :root {
   --bg: #0d0f14;
@@ -3900,7 +3900,7 @@ async function loadFromSupabase() {
 }
 
 // ── SALVAR ORÇAMENTO NO SUPABASE ─────────────────────────────
-async async function sbDeleteOrcamento(id) {
+async function sbDeleteOrcamento(id) {
   try { await sb.from('orcamentos').delete().eq('id', id); } catch(e) { console.warn('sbDeleteOrcamento:', e); }
 }
 async function sbDeleteVenda(id) {

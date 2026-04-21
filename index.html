@@ -362,13 +362,21 @@ function enterApp() {
   var dashNav = document.querySelector('.nav-item[data-page="dashboard"]');
   if (dashNav) dashNav.classList.add('active');
   // Render the dashboard and load data
+  // Call checkAuth to set TENANT_ID and SESSION, then load data
   setTimeout(function() {
-    if (typeof loadConfig === 'function') loadConfig();
-    if (typeof renderDashboard === 'function') renderDashboard();
-    if (typeof populateMesSelects === 'function') populateMesSelects();
-    if (typeof loadFromSupabase === 'function') loadFromSupabase();
-    setTimeout(function() { if (typeof window.showSubscriptionCard === 'function') window.showSubscriptionCard(); }, 1500);
-  }, 100);
+    if (typeof checkAuth === 'function') {
+      checkAuth(true).then(function() {
+        if (typeof loadConfig === 'function') loadConfig();
+        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof populateMesSelects === 'function') populateMesSelects();
+        if (typeof loadFromSupabase === 'function') loadFromSupabase();
+        setTimeout(function() { if (typeof window.showSubscriptionCard === 'function') window.showSubscriptionCard(); }, 1500);
+      });
+    } else {
+      if (typeof loadConfig === 'function') loadConfig();
+      if (typeof renderDashboard === 'function') renderDashboard();
+    }
+  }, 200);
 }
 
 window.logout = function() {
@@ -3970,13 +3978,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let SESSION   = null;
 let TENANT_ID = null;
 
-async function checkAuth() {
+async function checkAuth(silent) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
-    // Só redireciona se não estiver já no index
-    // No session - show auth screen, don't redirect
-    var as = document.getElementById('auth-screen');
-    if (as) as.classList.add('active');
+    if (!silent) {
+      // No session - show auth screen, don't redirect
+      var as = document.getElementById('auth-screen');
+      if (as) as.classList.add('active');
+    }
     return;
   }
   SESSION = session;

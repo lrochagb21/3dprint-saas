@@ -2413,6 +2413,7 @@ async function deleteOrc(id) {
   const ok = await confirm2('Excluir orçamento', 'Esta ação não pode ser desfeita.');
   if (!ok) return;
   saveAll('orcamentos', getOrcamentos().filter(x=>x.id!==id));
+  if (TENANT_ID) sbDeleteOrcamento(id);
   renderOrcamentos();
   toast('Orçamento excluído');
 }
@@ -2724,6 +2725,7 @@ async function deleteAnuncio(id) {
   const ok = await confirm2('Excluir anúncio', 'Esta ação não pode ser desfeita.');
   if (!ok) return;
   saveAll('anuncios', getAnuncios().filter(x=>x.id!==id));
+  if (TENANT_ID) sbDeleteAnuncio(id);
   renderAnuncios();
   toast('Anúncio excluído');
 }
@@ -2842,6 +2844,7 @@ async function deleteVenda(id) {
   const ok = await confirm2('Excluir venda', 'Esta ação não pode ser desfeita.');
   if (!ok) return;
   saveAll('vendas', getVendas().filter(x=>x.id!==id));
+  if (TENANT_ID) sbDeleteVenda(id);
   renderVendas();
   populateMesSelects();
   renderDashboard();
@@ -3045,6 +3048,7 @@ async function deleteEstoque(id) {
   const ok = await confirm2('Excluir material', 'Esta ação não pode ser desfeita.');
   if (!ok) return;
   saveAll('estoque', getEstoque().filter(x=>x.id!==id));
+  if (TENANT_ID) sbDeleteEstoque(id);
   renderEstoque();
   toast('Material excluído');
 }
@@ -3896,7 +3900,20 @@ async function loadFromSupabase() {
 }
 
 // ── SALVAR ORÇAMENTO NO SUPABASE ─────────────────────────────
-async function sbSaveOrcamento(orc) {
+async async function sbDeleteOrcamento(id) {
+  try { await sb.from('orcamentos').delete().eq('id', id); } catch(e) { console.warn('sbDeleteOrcamento:', e); }
+}
+async function sbDeleteVenda(id) {
+  try { await sb.from('vendas').delete().eq('id', id); } catch(e) { console.warn('sbDeleteVenda:', e); }
+}
+async function sbDeleteAnuncio(id) {
+  try { await sb.from('anuncios').delete().eq('id', id); } catch(e) { console.warn('sbDeleteAnuncio:', e); }
+}
+async function sbDeleteEstoque(id) {
+  try { await sb.from('estoque').delete().eq('id', id); } catch(e) { console.warn('sbDeleteEstoque:', e); }
+}
+
+function sbSaveOrcamento(orc) {
   try {
     await sb.from('orcamentos').upsert({
       id: orc.id,

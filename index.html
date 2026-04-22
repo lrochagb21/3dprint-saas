@@ -3503,6 +3503,9 @@ function saveConfig() {
     plataformas: getConfig().plataformas
   };
   DB.set('config', cfg);
+  // Sync para Supabase
+  if (TENANT_ID) sbSaveConfig(cfg);
+  else setTimeout(function() { if (TENANT_ID) sbSaveConfig(cfg); }, 2000);
   // Save Bling settings
   const blingKey = document.getElementById('cfg-bling-key').value.trim();
   if (blingKey) localStorage.setItem('p3d_bling_key', blingKey);
@@ -4114,18 +4117,18 @@ async function loadFromSupabase() {
     if (cfgRes.data) {
       const c = cfgRes.data;
       _mem['config'] = {
-        filamento: c.custo_kg_filamento || 120,
-        kwh: c.custo_kwh || 0.85,
-        potencia: c.potencia_w ? c.potencia_w / 1000 : 0.250,
-        margem: c.margem_lucro || 30,
-        manutencao: c.custo_fixo_hora || 2,
-        taxaPerc: 15,
-        taxaFixa: 5,
-        imposto: 0,
-        impPreco: 4800,
-        impTempo: 10000,
-        impManut: 1000,
-        plataformas: ['Shopee', 'Mercado Livre', 'Amazon']
+        filamento:   c.custo_kg_filamento || 120,
+        kwh:         c.custo_kwh          || 0.85,
+        potencia:    c.potencia_w ? c.potencia_w / 1000 : 0.250,
+        margem:      c.margem_lucro       || 30,
+        manutencao:  c.custo_fixo_hora    || 2,
+        taxaPerc:    c.taxa_perc          != null ? c.taxa_perc  : 15,
+        taxaFixa:    c.taxa_fixa          != null ? c.taxa_fixa  : 5,
+        imposto:     c.imposto            != null ? c.imposto    : 0,
+        impPreco:    c.imp_preco          || 4800,
+        impTempo:    c.imp_tempo          || 10000,
+        impManut:    c.imp_manut          || 1000,
+        plataformas: c.plataformas ? JSON.parse(c.plataformas) : ['Shopee', 'Mercado Livre', 'Amazon']
       };
     }
   } catch(e) {
@@ -4233,10 +4236,18 @@ async function sbSaveConfig(cfg) {
   try {
     await sb.from('configuracoes').upsert({
       tenant_id: TENANT_ID,
+      custo_kg_filamento: cfg.filamento,
       custo_kwh: cfg.kwh,
       potencia_w: cfg.potencia * 1000,
       margem_lucro: cfg.margem,
-      custo_fixo_hora: cfg.manutencao
+      custo_fixo_hora: cfg.manutencao,
+      taxa_perc: cfg.taxaPerc,
+      taxa_fixa: cfg.taxaFixa,
+      imposto: cfg.imposto,
+      imp_preco: cfg.impPreco,
+      imp_tempo: cfg.impTempo,
+      imp_manut: cfg.impManut,
+      plataformas: JSON.stringify(cfg.plataformas || [])
     });
   } catch(e) { console.warn('Erro ao salvar config:', e); }
 }
